@@ -1,6 +1,9 @@
 # 課題管理アプリ
 * 課題をlistを利用し管理するアプリを作る。
 * フロント：react(Typescript), バック：Go
+* 画面イメージ図  
+<img width="300" alt="image" src="https://github.com/user-attachments/assets/eb96ecca-d00b-4ece-90e8-5f8dd154ca1f" />
+<img width="300" alt="image" src="https://github.com/user-attachments/assets/e7d73615-596e-46b6-a13d-ad0aafe93aff" />  
 
 ## 環境構築  
 ※ すでにwsl, npm, dockerはインストールされている。
