@@ -2,6 +2,9 @@ import { useNavigate } from 'react-router-dom';
 
 function HomeScreen() {
 	const navigate = useNavigate();
+  const handleNavigate = () => {
+    navigate('/ManegementTable');
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 py-4">
@@ -11,7 +14,7 @@ function HomeScreen() {
           <div className="flex space-x-2">
             <button 
 							className="bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-600"
-							onClick={() => navigate('./management')}
+							onClick={handleNavigate}
 						>
               
 							管理表
