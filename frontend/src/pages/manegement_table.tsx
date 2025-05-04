@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 
-function ManegementTable() {
+const ManegementTable = () => {
   const navigate = useNavigate();
   const BackHome = () =>{
     navigate('/');
@@ -27,4 +27,4 @@ function ManegementTable() {
   );
 }
 
-export default ManegementTable
+export default ManegementTable;
