@@ -1,11 +1,15 @@
+import { Routes, Route } from 'react-router-dom';
+import Home from './pages/home_screen';
+import ManegementTable from './pages/manegement_table';
 import './App.css'
 
 function App() {
   return (
-    <>
-      <h1 className='text-3xl underline font-bold text-red-700'>Hello World!</h1>
-    </>
-  )
+    <Routes>
+      <Route path="/" element={<Home />} />
+      <Route path="/ManegementTable" element={<ManegementTable />} />
+    </Routes>
+  );
 }
 
-export default App
+export default App;
