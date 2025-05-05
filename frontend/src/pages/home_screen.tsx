@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 const HomeScreen = () => {
   const navigate = useNavigate();
   const [tasks, setTasks] = useState<any[]>([]);
-  const [newTaskTitle, setNewTaskTitle] = useState('');
 
   useEffect(() => {
     fetchTasks();
@@ -21,26 +20,6 @@ const HomeScreen = () => {
       });
   };
 
-  const handleAddTask = () => {
-    if (!newTaskTitle.trim()) return;
-
-    fetch("http://localhost:8080/api/tasks", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ title: newTaskTitle })
-    })
-      .then(res => res.json())
-      .then(() => {
-        setNewTaskTitle('');
-        fetchTasks(); // タスク一覧を再取得
-      })
-      .catch(err => {
-        console.error("POST error:", err);
-      });
-  };
-
   const handleDeleteTask = (id: number) => {
     fetch(`http://localhost:8080/api/tasks/${id}` ,{
       method: "DELETE",
@@ -53,8 +32,12 @@ const HomeScreen = () => {
       })
   };
 
-  const handleNavigate = () => {
+  const handleNavigate_Table = () => {
     navigate('/ManegementTable');
+  }
+
+  const handleNavigate_add = () => {
+    navigate('/Adding');
   }
 
   return (
@@ -63,31 +46,21 @@ const HomeScreen = () => {
         <header className="flex justify-between">
           <h1 className="text-2xl font-bold">タスク表</h1>
           <div className="flex space-x-2">
+            <button
+              className="bg-blue-500 text-white px-4 py-1 rounded"
+              onClick={handleNavigate_add}
+            >
+              追加
+            </button>
             <button 
               className="bg-blue-500 text-white px-4 py-1 rounded"
-              onClick={handleNavigate}
+              onClick={handleNavigate_Table}
             >
               管理リスト
             </button>
           </div>
         </header>
         <hr className="my-4 border-gray-400" />
-
-        <div className="flex items-center space-x-2 mb-4">
-          <input
-            className="border px-2 py-1"
-            type="text"
-            value={newTaskTitle}
-            onChange={(e) => setNewTaskTitle(e.target.value)}
-            placeholder="新しいタスクを入力"
-          />
-          <button
-            className="bg-blue-500 text-white px-4 py-1 rounded"
-            onClick={handleAddTask}
-          >
-            追加
-          </button>
-        </div>
 
         <h2 className="text-xl font-semibold">タスクリスト</h2>
         <ul className="mt-2 space-y-1">
