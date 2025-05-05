@@ -82,6 +82,26 @@ func main() {
 		}
 	})
 
+	http.HandleFunc("/api/tasks/", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "DELETE")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+		w.Header().Set("Content-Type", "application/json")
+
+		if r.Method == http.MethodDelete {
+			// 削除処理(DELETE)
+			id := r.URL.Path[len("/api/tasks/"):]
+
+			_, err := db.Exec("DELETE FROM tasks WHERE id = (?)", id)
+			if err != nil {
+				http.Error(w, err.Error(), 500)
+				return
+			}
+
+			w.WriteHeader(http.StatusNoContent)
+		}
+	})
+
 	log.Println("Listening on :8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }

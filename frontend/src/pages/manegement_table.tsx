@@ -1,10 +1,26 @@
 import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 
 const ManegementTable = () => {
   const navigate = useNavigate();
-  // 仮のデータ。あとで消す。(shima)
-  const subjects = ["生体医工学", "情報セキュリティ", "電気電子工学", "理工学概論", "算数"];
-  const lessonCount = 14;
+  const [tasks, setTasks] = useState<any[]>([]);
+  const lessonCount = 14;  //授業回数は14回+「最終レポートorテスト」とする。
+  
+  useEffect(() => {
+    fetchTasks();
+  }, []);
+  
+  const fetchTasks = () => {
+    fetch("http://localhost:8080/api/tasks")
+      .then((res) => res.json())
+      .then((data) => {
+        setTasks(data);
+      })
+      .catch((err) => {
+        console.error('API fetch error:', err);
+      });
+  };
+
   const BackHome = () =>{
     navigate('/');
   }
@@ -31,7 +47,7 @@ const ManegementTable = () => {
         <table className="min-w-full border border-gray-300 text-sm">
           <thead className="bg-gray-100">
             <tr>
-              <th className="border border-gray-300 px-4 py-2 text-left">教科</th>
+              <th className="border border-gray-300 px-4 py-2 text-left">項目</th>
               {Array.from({ length: lessonCount }, (_, i) => (
                 <th key={i} className="border border-gray-300 px-4 py-2">
                   {i + 1}
@@ -41,9 +57,9 @@ const ManegementTable = () => {
             </tr>
           </thead>
           <tbody>
-            {subjects.map((subject, i) => (
-              <tr key={i} className="hover:bg-gray-50">
-                <td className="border border-gray-300 px-4 py-2 font-medium">{subject}</td>
+            {Array.isArray(tasks) && tasks.map((task, i) => (
+              <tr key={i}>
+                <td className="border border-gray-300 px-4 py-2 font-medium">{task.title}</td>
                 {Array.from({ length: lessonCount+1 }, (_, j) => (
                   <td key={j} className="border border-gray-300 px-4 py-2 text-center">
                     <input type="checkbox" />

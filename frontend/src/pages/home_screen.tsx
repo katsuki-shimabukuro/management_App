@@ -40,6 +40,19 @@ const HomeScreen = () => {
         console.error("POST error:", err);
       });
   };
+
+  const handleDeleteTask = (id: number) => {
+    fetch(`http://localhost:8080/api/tasks/${id}` ,{
+      method: "DELETE",
+    })
+      .then(() => {
+        fetchTasks();
+      })
+      .catch(err => {
+        console.error('DELETE error:', err);
+      })
+  };
+
   const handleNavigate = () => {
     navigate('/ManegementTable');
   }
@@ -79,7 +92,15 @@ const HomeScreen = () => {
         <h2 className="text-xl font-semibold">タスクリスト</h2>
         <ul className="mt-2 space-y-1">
           {Array.isArray(tasks) && tasks.map((task) => (
-            <li key={task.id} className="border-b py-1">{task.title}</li>
+            <li key={task.id} className="border-b py-1 flex justify-between items-center">
+              <span>{task.title}</span>
+              <button
+                className='bg-red-500 text-white px-2 py-1 rounded text-sm'
+                onClick={() => handleDeleteTask(task.id)}
+              >
+                削除
+              </button>
+            </li>
           ))}
         </ul>
       </div>
