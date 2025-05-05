@@ -54,7 +54,7 @@ const HomeScreen = () => {
               className="bg-blue-500 text-white px-4 py-1 rounded"
               onClick={handleNavigate}
             >
-              管理表
+              管理リスト
             </button>
           </div>
         </header>
