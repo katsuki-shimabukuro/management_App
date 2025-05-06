@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 interface Task {
   id: number;
   title: string;
+  lesson_number: number;
+  note: string;
   is_done: boolean;
 }
 
@@ -86,7 +88,10 @@ const HomeScreen = () => {
         <ul className="mt-2 space-y-1">
           {Array.isArray(tasks) && tasks.map((task) => (
             <li key={task.id} className="border-b py-1 flex justify-between items-center">
-              <span>{task.title}</span>
+              <span className='font-semibold'>
+                {task.title}
+              </span>
+              <div className="text-sm text-gray-600">{task.note}</div>
               <div className='flex space-x-2'>
                 <input 
                   type="checkbox"

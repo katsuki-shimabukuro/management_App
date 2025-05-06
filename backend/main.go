@@ -21,6 +21,8 @@ func main() {
 	CREATE TABLE IF NOT EXISTS tasks (
 		id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
 		title TEXT,
+		lesson_number INTEGER,
+		note TEXT,
 		is_done BOOLEAN DEFAULT 0
 	);`
 	_, err = db.Exec(sqlStmt)
@@ -43,7 +45,7 @@ func main() {
 
 		if r.Method == http.MethodGet {
 			// 一覧取得(GET)
-			rows, err := db.Query("SELECT id, title, is_done FROM tasks")
+			rows, err := db.Query("SELECT id, title, lesson_number, note, is_done FROM tasks ORDER BY lesson_number ASC")
 			if err != nil {
 				http.Error(w, err.Error(), 500)
 				return
@@ -54,27 +56,37 @@ func main() {
 			for rows.Next() {
 				var id int
 				var title string
+				var lessonNumber int
+				var note string
 				var isDone bool
-				rows.Scan(&id, &title, &isDone)
-				tasks = append(tasks, map[string]interface{}{"id": id, "title": title, "is_done": isDone})
+				rows.Scan(&id, &title, &lessonNumber, &note, &isDone)
+				tasks = append(tasks, map[string]interface{}{
+					"id":            id,
+					"title":         title,
+					"lesson_number": lessonNumber,
+					"note":          note,
+					"is_done":       isDone,
+				})
 			}
 			json.NewEncoder(w).Encode(tasks)
 
 		} else if r.Method == http.MethodPost {
 			// 追加処理(POST)
-			var task map[string]string
+			var task map[string]interface{}
 			if err := json.NewDecoder(r.Body).Decode(&task); err != nil {
 				http.Error(w, "Invalid JSON", 400)
 				return
 			}
 
-			title := task["title"]
+			title := task["title"].(string)
+			lessonNumber := int(task["lesson_number"].(float64))
+			note := task["note"].(string)
 			if title == "" {
 				http.Error(w, "title is required", 400)
 				return
 			}
 
-			_, err := db.Exec("INSERT INTO tasks (title, is_done) VALUES (?, ?)", title, false)
+			_, err := db.Exec("INSERT INTO tasks (title, lesson_number, note, is_done) VALUES (?, ?, ?, ?)", title, lessonNumber, note, false)
 			if err != nil {
 				http.Error(w, err.Error(), 500)
 				return
