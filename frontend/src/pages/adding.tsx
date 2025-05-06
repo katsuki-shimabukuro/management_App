@@ -63,6 +63,7 @@ const Adding = () => {
             追加
           </button>
         </div>
+        
       </div>
     </div>
     

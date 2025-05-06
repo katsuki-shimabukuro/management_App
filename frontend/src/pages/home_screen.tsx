@@ -1,9 +1,15 @@
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 
+interface Task {
+  id: number;
+  title: string;
+  is_done: boolean;
+}
+
 const HomeScreen = () => {
   const navigate = useNavigate();
-  const [tasks, setTasks] = useState<any[]>([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
 
   useEffect(() => {
     fetchTasks();
@@ -30,6 +36,20 @@ const HomeScreen = () => {
       .catch(err => {
         console.error('DELETE error:', err);
       })
+  };
+
+  const handleToggleDone = (id: number, isDone: boolean) => {
+    fetch(`http://localhost:8080/api/tasks/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ is_done: isDone }),
+    })
+      .then(() => {
+        fetchTasks();
+      })
+      .catch((err) => {
+        console.error('PATCH error:', err);
+      });
   };
 
   const handleNavigate_Table = () => {
@@ -67,12 +87,19 @@ const HomeScreen = () => {
           {Array.isArray(tasks) && tasks.map((task) => (
             <li key={task.id} className="border-b py-1 flex justify-between items-center">
               <span>{task.title}</span>
-              <button
-                className='bg-red-500 text-white px-2 py-1 rounded text-sm'
-                onClick={() => handleDeleteTask(task.id)}
-              >
-                削除
-              </button>
+              <div className='flex space-x-2'>
+                <input 
+                  type="checkbox"
+                  checked={task.is_done}
+                  onChange={(e) => handleToggleDone(task.id, e.target.checked)} 
+                />
+                <button
+                  className='bg-red-500 text-white px-2 py-1 rounded text-sm'
+                  onClick={() => handleDeleteTask(task.id)}
+                >
+                  削除
+                </button>
+              </div>
             </li>
           ))}
         </ul>

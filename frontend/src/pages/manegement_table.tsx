@@ -62,7 +62,11 @@ const ManegementTable = () => {
                 <td className="border border-gray-300 px-4 py-2 font-medium">{task.title}</td>
                 {Array.from({ length: lessonCount+1 }, (_, j) => (
                   <td key={j} className="border border-gray-300 px-4 py-2 text-center">
-                    <input type="checkbox" />
+                    <input 
+                      type="checkbox" 
+                      checked={task.is_done} 
+                      className="cursor-not-allowed" 
+                    />
                   </td>
                 ))}
               </tr>

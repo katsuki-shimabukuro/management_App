@@ -20,7 +20,8 @@ func main() {
 	sqlStmt := `
 	CREATE TABLE IF NOT EXISTS tasks (
 		id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-		title TEXT
+		title TEXT,
+		is_done BOOLEAN DEFAULT 0
 	);`
 	_, err = db.Exec(sqlStmt)
 	if err != nil {
@@ -42,7 +43,7 @@ func main() {
 
 		if r.Method == http.MethodGet {
 			// 一覧取得(GET)
-			rows, err := db.Query("SELECT id, title FROM tasks")
+			rows, err := db.Query("SELECT id, title, is_done FROM tasks")
 			if err != nil {
 				http.Error(w, err.Error(), 500)
 				return
@@ -53,8 +54,9 @@ func main() {
 			for rows.Next() {
 				var id int
 				var title string
-				rows.Scan(&id, &title)
-				tasks = append(tasks, map[string]interface{}{"id": id, "title": title})
+				var isDone bool
+				rows.Scan(&id, &title, &isDone)
+				tasks = append(tasks, map[string]interface{}{"id": id, "title": title, "is_done": isDone})
 			}
 			json.NewEncoder(w).Encode(tasks)
 
@@ -72,7 +74,7 @@ func main() {
 				return
 			}
 
-			_, err := db.Exec("INSERT INTO tasks (title) VALUES (?)", title)
+			_, err := db.Exec("INSERT INTO tasks (title, is_done) VALUES (?, ?)", title, false)
 			if err != nil {
 				http.Error(w, err.Error(), 500)
 				return
@@ -84,20 +86,34 @@ func main() {
 
 	http.HandleFunc("/api/tasks/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Methods", "DELETE")
+		w.Header().Set("Access-Control-Allow-Methods", "DELETE, PATCH")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 		w.Header().Set("Content-Type", "application/json")
 
+		id := r.URL.Path[len("/api/tasks/"):]
+
 		if r.Method == http.MethodDelete {
 			// 削除処理(DELETE)
-			id := r.URL.Path[len("/api/tasks/"):]
-
 			_, err := db.Exec("DELETE FROM tasks WHERE id = (?)", id)
 			if err != nil {
 				http.Error(w, err.Error(), 500)
 				return
 			}
 
+			w.WriteHeader(http.StatusNoContent)
+		} else if r.Method == http.MethodPatch {
+			// checkboxの状態更新(Patch)
+			var body map[string]bool
+			if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+				http.Error(w, "Invalid JSON", 400)
+				return
+			}
+			isDone := body["is_done"]
+			_, err := db.Exec("UPDATE tasks SET is_done = ? WHERE id = ?", isDone, id)
+			if err != nil {
+				http.Error(w, err.Error(), 500)
+				return
+			}
 			w.WriteHeader(http.StatusNoContent)
 		}
 	})
