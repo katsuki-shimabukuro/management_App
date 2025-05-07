@@ -84,30 +84,33 @@ const HomeScreen = () => {
         </header>
         <hr className="my-4 border-gray-400" />
 
-        <h2 className="text-xl font-semibold">タスクリスト</h2>
-        <ul className="mt-2 space-y-1">
-          {Array.isArray(tasks) && tasks.map((task) => (
-            <li key={task.id} className="border-b py-1 flex justify-between items-center">
-              <span className='font-semibold'>
-                {task.title}
-              </span>
-              <div className="text-sm text-gray-600">{task.note}</div>
-              <div className='flex space-x-2'>
-                <input 
-                  type="checkbox"
-                  checked={task.is_done}
-                  onChange={(e) => handleToggleDone(task.id, e.target.checked)} 
-                />
-                <button
-                  className='bg-red-500 text-white px-2 py-1 rounded text-sm'
-                  onClick={() => handleDeleteTask(task.id)}
-                >
-                  削除
-                </button>
-              </div>
-            </li>
-          ))}
-        </ul>
+        <div className='px-30'>
+          <h2 className="text-xl font-semibold">タスクリスト</h2>
+          <hr className="my-4 border-gray-400" />
+          <ul className="mt-2 space-y-1">
+            {Array.isArray(tasks) && tasks.map((task) => (
+              <li key={task.id} className="bg-white rounded-lg shadow p-4 mb-2 flex justify-between items-center">
+                <span className='font-semibold'>
+                  {task.title}
+                </span>
+                <div className="text-sm text-gray-600">備考：{task.note}</div>
+                <div className='flex space-x-2'>
+                  <input 
+                    type="checkbox"
+                    checked={task.is_done}
+                    onChange={(e) => handleToggleDone(task.id, e.target.checked)} 
+                  />
+                  <button
+                    className='bg-red-500 text-white px-2 py-1 rounded text-sm'
+                    onClick={() => handleDeleteTask(task.id)}
+                  >
+                    削除
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
     </div>
   );
