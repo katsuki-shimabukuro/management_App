@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 const ManegementTable = () => {
   const navigate = useNavigate();
   const [tasks, setTasks] = useState<any[]>([]);
-  const lessonCount = 14;  //授業回数は14回+「最終レポートorテスト」とする。
+  const lessonCount = 15;
   
   useEffect(() => {
     fetchTasks();
@@ -53,14 +53,13 @@ const ManegementTable = () => {
                   {i + 1}
                 </th>
               ))}
-              <th className="border border-gray-300 px-4 py-2">最終レポートorテスト</th>
             </tr>
           </thead>
           <tbody>
             {Array.isArray(tasks) && tasks.map((task, i) => (
               <tr key={i}>
                 <td className="border border-gray-300 px-4 py-2 font-medium">{task.title}</td>
-                {Array.from({ length: lessonCount+1 }, (_, j) => (
+                {Array.from({ length: lessonCount }, (_, j) => (
                   <td key={j} className="border border-gray-300 px-4 py-2 text-center">
                     <input 
                       type="checkbox" 
