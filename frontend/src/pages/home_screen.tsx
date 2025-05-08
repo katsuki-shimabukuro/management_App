@@ -3,7 +3,8 @@ import { useEffect, useState } from 'react';
 
 interface Task {
   id: number;
-  title: string;
+  title_number: string;
+  only_title: string;
   lesson_number: number;
   note: string;
   is_done: boolean;
@@ -64,7 +65,7 @@ const HomeScreen = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 py-4">
-      <div className="px-6 mx-auto">
+      <div className="px-30 mx-auto">
         <header className="flex justify-between">
           <h1 className="text-2xl font-bold">タスク表</h1>
           <div className="flex space-x-2">
@@ -85,13 +86,11 @@ const HomeScreen = () => {
         <hr className="my-4 border-gray-400" />
 
         <div className='px-30'>
-          <h2 className="text-xl font-semibold">タスクリスト</h2>
-          <hr className="my-4 border-gray-400" />
           <ul className="mt-2 space-y-1">
             {Array.isArray(tasks) && tasks.map((task) => (
               <li key={task.id} className="bg-white rounded-lg shadow p-4 mb-2 flex justify-between items-center">
                 <span className='font-semibold'>
-                  {task.title}
+                  {task.title_number}
                 </span>
                 <div className="text-sm text-gray-600">備考：{task.note}</div>
                 <div className='flex space-x-2'>

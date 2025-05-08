@@ -20,7 +20,8 @@ func main() {
 	sqlStmt := `
 	CREATE TABLE IF NOT EXISTS tasks (
 		id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-		title TEXT,
+		title_number TEXT,
+		only_title Text,
 		lesson_number INTEGER,
 		note TEXT,
 		is_done BOOLEAN DEFAULT 0
@@ -45,7 +46,7 @@ func main() {
 
 		if r.Method == http.MethodGet {
 			// 一覧取得(GET)
-			rows, err := db.Query("SELECT id, title, lesson_number, note, is_done FROM tasks ORDER BY lesson_number ASC")
+			rows, err := db.Query("SELECT id, title_number, only_title, lesson_number, note, is_done FROM tasks ORDER BY lesson_number ASC")
 			if err != nil {
 				http.Error(w, err.Error(), 500)
 				return
@@ -55,14 +56,16 @@ func main() {
 			var tasks []map[string]interface{}
 			for rows.Next() {
 				var id int
-				var title string
+				var title_number string
+				var only_title string
 				var lessonNumber int
 				var note string
 				var isDone bool
-				rows.Scan(&id, &title, &lessonNumber, &note, &isDone)
+				rows.Scan(&id, &title_number, &only_title, &lessonNumber, &note, &isDone)
 				tasks = append(tasks, map[string]interface{}{
 					"id":            id,
-					"title":         title,
+					"title_number":  title_number,
+					"only_title":    only_title,
 					"lesson_number": lessonNumber,
 					"note":          note,
 					"is_done":       isDone,
@@ -78,15 +81,16 @@ func main() {
 				return
 			}
 
-			title := task["title"].(string)
+			title_number := task["title_number"].(string)
+			only_title := task["only_title"].(string)
 			lessonNumber := int(task["lesson_number"].(float64))
 			note := task["note"].(string)
-			if title == "" {
+			if title_number == "" {
 				http.Error(w, "title is required", 400)
 				return
 			}
 
-			_, err := db.Exec("INSERT INTO tasks (title, lesson_number, note, is_done) VALUES (?, ?, ?, ?)", title, lessonNumber, note, false)
+			_, err := db.Exec("INSERT INTO tasks (title_number, only_title, lesson_number, note, is_done) VALUES (?, ?, ?, ?, ?)", title_number, only_title, lessonNumber, note, false)
 			if err != nil {
 				http.Error(w, err.Error(), 500)
 				return

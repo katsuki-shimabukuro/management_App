@@ -29,7 +29,8 @@ const Adding = () => {
     if (hasError) return;
 
     const tasks = Array.from({ length: lessonCount }, (_, i) => ({
-      title: `第${i + 1}回 ${title}`,
+      title_number: `第${i + 1}回 ${title}`,
+      only_title: `${title}`,
       lesson_number: i+1,
       note: note
     }));

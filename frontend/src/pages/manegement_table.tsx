@@ -1,9 +1,18 @@
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 
+interface Task {
+  id: number;
+  title_number: string;
+  only_title: string;
+  lesson_number: number;
+  note: string;
+  is_done: boolean;
+}
+
 const ManegementTable = () => {
   const navigate = useNavigate();
-  const [tasks, setTasks] = useState<any[]>([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
   const lessonCount = 15;
   
   useEffect(() => {
@@ -20,6 +29,14 @@ const ManegementTable = () => {
         console.error('API fetch error:', err);
       });
   };
+
+  const groupedTasks: { [Key: string]:{ [lesson:number]: Task } } = {};
+  tasks.forEach((task) => {
+    if (!groupedTasks[task.only_title]) {
+      groupedTasks[task.only_title] = {};
+    }
+    groupedTasks[task.only_title][task.lesson_number] = task;
+  })
 
   const BackHome = () =>{
     navigate('/');
@@ -56,18 +73,24 @@ const ManegementTable = () => {
             </tr>
           </thead>
           <tbody>
-            {Array.isArray(tasks) && tasks.map((task, i) => (
-              <tr key={i}>
-                <td className="border border-gray-300 px-4 py-2 font-medium">{task.title}</td>
-                {Array.from({ length: lessonCount }, (_, j) => (
-                  <td key={j} className="border border-gray-300 px-4 py-2 text-center">
-                    <input 
-                      type="checkbox" 
-                      checked={task.is_done} 
-                      className="cursor-not-allowed" 
-                    />
-                  </td>
-                ))}
+            {Object.entries(groupedTasks).map(([title, lessons]) => (
+              <tr key={title}>
+                <td className="border border-gray-300 px-4 py-2 font-medium">{title}</td>
+                {Array.from({ length: lessonCount }, (_, i) => {
+                  const lessonTask = lessons[i + 1];
+                  return (
+                    <td key={i} className="border border-gray-300 px-4 py-2 text-center">
+                      {lessonTask ? (
+                        <input
+                          type="checkbox"
+                          checked={lessonTask.is_done}
+                          className="cursor-not-allowed"
+                          readOnly
+                        />
+                      ) : null}
+                    </td>
+                  );
+                })}
               </tr>
             ))}
           </tbody>
