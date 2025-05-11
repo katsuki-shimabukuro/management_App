@@ -20,7 +20,11 @@ func main() {
 	sqlStmt := `
 	CREATE TABLE IF NOT EXISTS tasks (
 		id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-		title TEXT
+		title_number TEXT,
+		only_title Text,
+		lesson_number INTEGER,
+		note TEXT,
+		is_done BOOLEAN DEFAULT 0
 	);`
 	_, err = db.Exec(sqlStmt)
 	if err != nil {
@@ -42,7 +46,7 @@ func main() {
 
 		if r.Method == http.MethodGet {
 			// 一覧取得(GET)
-			rows, err := db.Query("SELECT id, title FROM tasks")
+			rows, err := db.Query("SELECT id, title_number, only_title, lesson_number, note, is_done FROM tasks ORDER BY lesson_number ASC")
 			if err != nil {
 				http.Error(w, err.Error(), 500)
 				return
@@ -52,33 +56,81 @@ func main() {
 			var tasks []map[string]interface{}
 			for rows.Next() {
 				var id int
-				var title string
-				rows.Scan(&id, &title)
-				tasks = append(tasks, map[string]interface{}{"id": id, "title": title})
+				var title_number string
+				var only_title string
+				var lessonNumber int
+				var note string
+				var isDone bool
+				rows.Scan(&id, &title_number, &only_title, &lessonNumber, &note, &isDone)
+				tasks = append(tasks, map[string]interface{}{
+					"id":            id,
+					"title_number":  title_number,
+					"only_title":    only_title,
+					"lesson_number": lessonNumber,
+					"note":          note,
+					"is_done":       isDone,
+				})
 			}
 			json.NewEncoder(w).Encode(tasks)
 
 		} else if r.Method == http.MethodPost {
 			// 追加処理(POST)
-			var task map[string]string
+			var task map[string]interface{}
 			if err := json.NewDecoder(r.Body).Decode(&task); err != nil {
 				http.Error(w, "Invalid JSON", 400)
 				return
 			}
 
-			title := task["title"]
-			if title == "" {
+			title_number := task["title_number"].(string)
+			only_title := task["only_title"].(string)
+			lessonNumber := int(task["lesson_number"].(float64))
+			note := task["note"].(string)
+			if title_number == "" {
 				http.Error(w, "title is required", 400)
 				return
 			}
 
-			_, err := db.Exec("INSERT INTO tasks (title) VALUES (?)", title)
+			_, err := db.Exec("INSERT INTO tasks (title_number, only_title, lesson_number, note, is_done) VALUES (?, ?, ?, ?, ?)", title_number, only_title, lessonNumber, note, false)
 			if err != nil {
 				http.Error(w, err.Error(), 500)
 				return
 			}
 
 			json.NewEncoder(w).Encode(map[string]string{"message": "Task added"})
+		}
+	})
+
+	http.HandleFunc("/api/tasks/", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "DELETE, PATCH")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+		w.Header().Set("Content-Type", "application/json")
+
+		id := r.URL.Path[len("/api/tasks/"):]
+
+		if r.Method == http.MethodDelete {
+			// 削除処理(DELETE)
+			_, err := db.Exec("DELETE FROM tasks WHERE id = (?)", id)
+			if err != nil {
+				http.Error(w, err.Error(), 500)
+				return
+			}
+
+			w.WriteHeader(http.StatusNoContent)
+		} else if r.Method == http.MethodPatch {
+			// checkboxの状態更新(Patch)
+			var body map[string]bool
+			if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+				http.Error(w, "Invalid JSON", 400)
+				return
+			}
+			isDone := body["is_done"]
+			_, err := db.Exec("UPDATE tasks SET is_done = ? WHERE id = ?", isDone, id)
+			if err != nil {
+				http.Error(w, err.Error(), 500)
+				return
+			}
+			w.WriteHeader(http.StatusNoContent)
 		}
 	})
 

@@ -1,10 +1,18 @@
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 
+interface Task {
+  id: number;
+  title_number: string;
+  only_title: string;
+  lesson_number: number;
+  note: string;
+  is_done: boolean;
+}
+
 const HomeScreen = () => {
   const navigate = useNavigate();
-  const [tasks, setTasks] = useState<any[]>([]);
-  const [newTaskTitle, setNewTaskTitle] = useState('');
+  const [tasks, setTasks] = useState<Task[]>([]);
 
   useEffect(() => {
     fetchTasks();
@@ -21,67 +29,87 @@ const HomeScreen = () => {
       });
   };
 
-  const handleAddTask = () => {
-    if (!newTaskTitle.trim()) return;
-
-    fetch("http://localhost:8080/api/tasks", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ title: newTaskTitle })
+  const handleDeleteTask = (id: number) => {
+    fetch(`http://localhost:8080/api/tasks/${id}` ,{
+      method: "DELETE",
     })
-      .then(res => res.json())
       .then(() => {
-        setNewTaskTitle('');
-        fetchTasks(); // タスク一覧を再取得
+        fetchTasks();
       })
       .catch(err => {
-        console.error("POST error:", err);
+        console.error('DELETE error:', err);
+      })
+  };
+
+  const handleToggleDone = (id: number, isDone: boolean) => {
+    fetch(`http://localhost:8080/api/tasks/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ is_done: isDone }),
+    })
+      .then(() => {
+        fetchTasks();
+      })
+      .catch((err) => {
+        console.error('PATCH error:', err);
       });
   };
-  const handleNavigate = () => {
+
+  const handleNavigate_Table = () => {
     navigate('/ManegementTable');
+  }
+
+  const handleNavigate_add = () => {
+    navigate('/Adding');
   }
 
   return (
     <div className="min-h-screen bg-gray-50 py-4">
-      <div className="px-6 mx-auto">
+      <div className="px-30 mx-auto">
         <header className="flex justify-between">
           <h1 className="text-2xl font-bold">タスク表</h1>
           <div className="flex space-x-2">
+            <button
+              className="bg-blue-500 text-white px-4 py-1 rounded"
+              onClick={handleNavigate_add}
+            >
+              追加
+            </button>
             <button 
               className="bg-blue-500 text-white px-4 py-1 rounded"
-              onClick={handleNavigate}
+              onClick={handleNavigate_Table}
             >
-              管理表
+              管理リスト
             </button>
           </div>
         </header>
         <hr className="my-4 border-gray-400" />
 
-        <div className="flex items-center space-x-2 mb-4">
-          <input
-            className="border px-2 py-1"
-            type="text"
-            value={newTaskTitle}
-            onChange={(e) => setNewTaskTitle(e.target.value)}
-            placeholder="新しいタスクを入力"
-          />
-          <button
-            className="bg-blue-500 text-white px-4 py-1 rounded"
-            onClick={handleAddTask}
-          >
-            追加
-          </button>
+        <div className='px-30'>
+          <ul className="mt-2 space-y-1">
+            {Array.isArray(tasks) && tasks.map((task) => (
+              <li key={task.id} className="bg-white rounded-lg shadow p-4 mb-2 flex justify-between items-center">
+                <span className='font-semibold'>
+                  {task.title_number}
+                </span>
+                <div className="text-sm text-gray-600">備考：{task.note}</div>
+                <div className='flex space-x-2'>
+                  <input 
+                    type="checkbox"
+                    checked={task.is_done}
+                    onChange={(e) => handleToggleDone(task.id, e.target.checked)} 
+                  />
+                  <button
+                    className='bg-red-500 text-white px-2 py-1 rounded text-sm'
+                    onClick={() => handleDeleteTask(task.id)}
+                  >
+                    削除
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
         </div>
-
-        <h2 className="text-xl font-semibold">タスクリスト</h2>
-        <ul className="mt-2 space-y-1">
-          {Array.isArray(tasks) && tasks.map((task) => (
-            <li key={task.id} className="border-b py-1">{task.title}</li>
-          ))}
-        </ul>
       </div>
     </div>
   );
