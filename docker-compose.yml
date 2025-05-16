@@ -6,6 +6,8 @@ services:
       - "8080:8080"
     networks:
       - app-network
+    volumes:
+      - backend-data:/app/data
 
   frontend:
     build:
@@ -24,6 +26,7 @@ services:
 
 volumes:
   node_modules:
+  backend-data:
 
 networks:
   app-network:

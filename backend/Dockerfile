@@ -7,6 +7,7 @@ WORKDIR /app
 # ソースコードを全部コピー
 COPY . .
 
+RUN mkdir -p /app/data
 RUN go build -o server .
 RUN apt-get update && apt-get install -y libsqlite3-dev
 
