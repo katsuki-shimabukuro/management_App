@@ -44,7 +44,7 @@ func main() {
 
 		if r.Method == http.MethodGet {
 			// 一覧取得(GET)
-			rows, err := db.Query("SELECT id, title_number, only_title, lesson_number, note, is_done, deadline FROM tasks ORDER BY lesson_number ASC")
+			rows, err := db.Query("SELECT id, title_number, only_title, lesson_number, note, is_done, deadline FROM tasks ORDER BY deadline IS NULL, deadline ASC, lesson_number ASC")
 			if err != nil {
 				http.Error(w, err.Error(), 500)
 				return
