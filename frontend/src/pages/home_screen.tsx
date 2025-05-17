@@ -122,7 +122,7 @@ const HomeScreen = () => {
                       className='bg-yellow-400 text-white px-2 py-1 rounded text-sm'
                       onClick={() => setEditingTaskId(task.id)}
                     >
-                      設定
+                      期限設定
                     </button>
                     <button
                       className='bg-red-500 text-white px-2 py-1 rounded text-sm'
@@ -134,7 +134,15 @@ const HomeScreen = () => {
                 </div>
                 <div className="text-sm text-gray-600">備考：{task.note}</div>
                 {task.deadline && (
-                  <div className="text-sm text-gray-500">期限：{new Date(task.deadline).toLocaleString()}</div>
+                  <div className="text-sm text-gray-500">
+                    期限：{new Date(task.deadline).toLocaleString(undefined, {
+                      year: 'numeric',
+                      month: '2-digit',
+                      day: '2-digit',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
+                  </div>
                 )}
               </li>
             ))}
@@ -150,19 +158,19 @@ const HomeScreen = () => {
                   />
                   <div className="flex justify-end space-x-2">
                     <button
-                      className="bg-gray-300 px-3 py-1 rounded"
+                      className="bg-blue-500 text-white px-3 py-1 rounded"
+                      onClick={handleUpdateDeadline}
+                    >
+                      保存
+                    </button>
+                    <button
+                      className="border border-blue-600 text-blue-600 px-3 py-1 rounded hover:bg-blue-100"
                       onClick={() => {
                         setEditingTaskId(null);
                         setNewDeadline("");
                       }}
                     >
                       キャンセル
-                    </button>
-                    <button
-                      className="bg-blue-500 text-white px-3 py-1 rounded"
-                      onClick={handleUpdateDeadline}
-                    >
-                      保存
                     </button>
                   </div>
                 </div>
