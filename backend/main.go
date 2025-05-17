@@ -24,7 +24,8 @@ func main() {
 		only_title Text,
 		lesson_number INTEGER,
 		note TEXT,
-		is_done BOOLEAN DEFAULT 0
+		is_done BOOLEAN DEFAULT 0,
+		deadline TEXT
 	);`
 	_, err = db.Exec(sqlStmt)
 	if err != nil {
@@ -33,10 +34,7 @@ func main() {
 
 	// APIエンドポイント（GET: 取得, POST: 追加）
 	http.HandleFunc("/api/tasks", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-		w.Header().Set("Content-Type", "application/json")
+		enableCORS(&w)
 
 		// プリフライトリクエストへの対応
 		if r.Method == http.MethodOptions {
@@ -46,7 +44,7 @@ func main() {
 
 		if r.Method == http.MethodGet {
 			// 一覧取得(GET)
-			rows, err := db.Query("SELECT id, title_number, only_title, lesson_number, note, is_done FROM tasks ORDER BY lesson_number ASC")
+			rows, err := db.Query("SELECT id, title_number, only_title, lesson_number, note, is_done, deadline FROM tasks ORDER BY lesson_number ASC")
 			if err != nil {
 				http.Error(w, err.Error(), 500)
 				return
@@ -56,20 +54,22 @@ func main() {
 			var tasks []map[string]interface{}
 			for rows.Next() {
 				var id int
-				var title_number string
-				var only_title string
+				var title_number, only_title, note, deadline sql.NullString
 				var lessonNumber int
-				var note string
 				var isDone bool
-				rows.Scan(&id, &title_number, &only_title, &lessonNumber, &note, &isDone)
-				tasks = append(tasks, map[string]interface{}{
+				rows.Scan(&id, &title_number, &only_title, &lessonNumber, &note, &isDone, &deadline)
+				task := map[string]interface{}{
 					"id":            id,
-					"title_number":  title_number,
-					"only_title":    only_title,
+					"title_number":  title_number.String,
+					"only_title":    only_title.String,
 					"lesson_number": lessonNumber,
-					"note":          note,
+					"note":          note.String,
 					"is_done":       isDone,
-				})
+				}
+				if deadline.Valid {
+					task["deadline"] = deadline.String
+				}
+				tasks = append(tasks, task)
 			}
 			json.NewEncoder(w).Encode(tasks)
 
@@ -101,10 +101,11 @@ func main() {
 	})
 
 	http.HandleFunc("/api/tasks/", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Methods", "DELETE, PATCH")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-		w.Header().Set("Content-Type", "application/json")
+		enableCORS(&w)
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
 
 		id := r.URL.Path[len("/api/tasks/"):]
 
@@ -118,22 +119,41 @@ func main() {
 
 			w.WriteHeader(http.StatusNoContent)
 		} else if r.Method == http.MethodPatch {
-			// checkboxの状態更新(Patch)
-			var body map[string]bool
+			// 状態更新(Patch)
+			var body map[string]interface{}
 			if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 				http.Error(w, "Invalid JSON", 400)
 				return
 			}
-			isDone := body["is_done"]
-			_, err := db.Exec("UPDATE tasks SET is_done = ? WHERE id = ?", isDone, id)
-			if err != nil {
-				http.Error(w, err.Error(), 500)
-				return
+			// checkboxの更新
+			if isDone, ok := body["is_done"]; ok {
+				_, err := db.Exec("UPDATE tasks SET is_done = ? WHERE id = ?", isDone, id)
+				if err != nil {
+					http.Error(w, err.Error(), 500)
+					return
+				}
 			}
+			// 期日の更新
+			if deadline, ok := body["deadline"]; ok {
+				_, err := db.Exec("UPDATE tasks SET deadline = ? WHERE id = ?", deadline, id)
+				if err != nil {
+					http.Error(w, err.Error(), 500)
+					return
+				}
+			}
+
 			w.WriteHeader(http.StatusNoContent)
 		}
 	})
 
 	log.Println("Listening on :8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
+}
+
+// CORS設定
+func enableCORS(w *http.ResponseWriter) {
+	(*w).Header().Set("Access-Control-Allow-Origin", "*")
+	(*w).Header().Set("Access-Control-Allow-Methods", "GET, POST, DELETE, PATCH, OPTIONS")
+	(*w).Header().Set("Access-Control-Allow-Headers", "Content-Type")
+	(*w).Header().Set("Content-Type", "application/json")
 }

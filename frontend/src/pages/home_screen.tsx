@@ -8,11 +8,15 @@ interface Task {
   lesson_number: number;
   note: string;
   is_done: boolean;
+  deadline?: string;
 }
 
 const HomeScreen = () => {
   const navigate = useNavigate();
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [editingTaskId, setEditingTaskId] = useState<number | null>(null);
+  const [newDeadline, setNewDeadline] = useState<string>("");
+
 
   useEffect(() => {
     fetchTasks();
@@ -55,6 +59,23 @@ const HomeScreen = () => {
       });
   };
 
+  const handleUpdateDeadline = () => {
+    if (editingTaskId === null) return;
+    fetch(`http://localhost:8080/api/tasks/${editingTaskId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ deadline: newDeadline }),
+    })
+      .then(() => {
+        setEditingTaskId(null);
+        setNewDeadline("");
+        fetchTasks();
+      })
+      .catch((err) => {
+        console.error("期限更新エラー:", err);
+      });
+  };
+
   const handleNavigate_Table = () => {
     navigate('/ManegementTable');
   }
@@ -88,26 +109,65 @@ const HomeScreen = () => {
         <div className='px-30'>
           <ul className="mt-2 space-y-1">
             {Array.isArray(tasks) && tasks.map((task) => (
-              <li key={task.id} className="bg-white rounded-lg shadow p-4 mb-2 flex justify-between items-center">
-                <span className='font-semibold'>
-                  {task.title_number}
-                </span>
-                <div className="text-sm text-gray-600">備考：{task.note}</div>
-                <div className='flex space-x-2'>
-                  <input 
-                    type="checkbox"
-                    checked={task.is_done}
-                    onChange={(e) => handleToggleDone(task.id, e.target.checked)} 
-                  />
-                  <button
-                    className='bg-red-500 text-white px-2 py-1 rounded text-sm'
-                    onClick={() => handleDeleteTask(task.id)}
-                  >
-                    削除
-                  </button>
+              <li key={task.id} className="bg-white rounded-lg shadow p-4 mb-2 flex flex-col">
+                <div className="flex justify-between items-center">
+                  <span className='font-semibold'>{task.title_number}</span>
+                  <div className='flex space-x-2'>
+                    <input 
+                      type="checkbox"
+                      checked={task.is_done}
+                      onChange={(e) => handleToggleDone(task.id, e.target.checked)} 
+                    />
+                    <button
+                      className='bg-yellow-400 text-white px-2 py-1 rounded text-sm'
+                      onClick={() => setEditingTaskId(task.id)}
+                    >
+                      設定
+                    </button>
+                    <button
+                      className='bg-red-500 text-white px-2 py-1 rounded text-sm'
+                      onClick={() => handleDeleteTask(task.id)}
+                    >
+                      削除
+                    </button>
+                  </div>
                 </div>
+                <div className="text-sm text-gray-600">備考：{task.note}</div>
+                {task.deadline && (
+                  <div className="text-sm text-gray-500">期限：{new Date(task.deadline).toLocaleString()}</div>
+                )}
               </li>
             ))}
+            {editingTaskId !== null && (
+              <div className="fixed top-0 left-0 w-full h-full bg-gray-100/40 flex items-center justify-center z-50">
+                <div className="bg-white p-6 rounded-lg shadow-lg">
+                  <h2 className="text-lg font-bold mb-2">期限を設定</h2>
+                  <input
+                    type="datetime-local"
+                    value={newDeadline}
+                    onChange={(e) => setNewDeadline(e.target.value)}
+                    className="border p-2 rounded w-full mb-4"
+                  />
+                  <div className="flex justify-end space-x-2">
+                    <button
+                      className="bg-gray-300 px-3 py-1 rounded"
+                      onClick={() => {
+                        setEditingTaskId(null);
+                        setNewDeadline("");
+                      }}
+                    >
+                      キャンセル
+                    </button>
+                    <button
+                      className="bg-blue-500 text-white px-3 py-1 rounded"
+                      onClick={handleUpdateDeadline}
+                    >
+                      保存
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </ul>
         </div>
       </div>
