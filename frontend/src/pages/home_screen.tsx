@@ -16,11 +16,41 @@ const HomeScreen = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [editingTaskId, setEditingTaskId] = useState<number | null>(null);
   const [newDeadline, setNewDeadline] = useState<string>("");
-
+  const [countdowns, setCountdowns] = useState<{ [key: number]: string }>({});
 
   useEffect(() => {
     fetchTasks();
   }, []);
+
+  useEffect(() => {
+    let interval: any;
+    const updateCountdowns = () => {
+      const updated: { [key: number]: string } = {};
+      tasks.forEach(task => {
+        if (task.deadline) {
+          updated[task.id] = getCountdown(task.deadline);
+        }
+      });
+      setCountdowns(updated);
+    };
+
+    updateCountdowns(); // 初期表示
+    // 次の00秒までの待機時間（ミリ秒）
+    const now = new Date();
+    const msUntilNextMinute = 60000 - (now.getSeconds() * 1000 + now.getMilliseconds());
+
+    // 最初に00秒まで待ってから、以後は毎分更新
+    const timeout = setTimeout(() => {
+      updateCountdowns();
+      interval = setInterval(updateCountdowns, 60000);
+    }, msUntilNextMinute);
+
+    // timeout の後片付け
+    return () => {
+      clearInterval(interval);
+      clearTimeout(timeout);
+    }
+  }, [tasks]);
 
   const fetchTasks = () => {
     fetch("http://localhost:8080/api/tasks")
@@ -76,6 +106,25 @@ const HomeScreen = () => {
       });
   };
 
+  const getCountdown = (deadline?: string): string => {
+    if (!deadline) return "";
+
+    const now = new Date();
+    const target = new Date(deadline);
+    const diff = target.getTime() - now.getTime();
+
+    if (diff < 0) return "ー Time Over ー";
+
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.ceil((diff % (1000 * 60 * 60)) / (1000 * 60));
+    if (minutes === 60) {
+      return `残り ${days}日 ${hours + 1}時間 0分`;
+    }
+
+    return `残り ${days}日 ${hours}時間 ${minutes}分`;
+  };
+
   const handleNavigate_Table = () => {
     navigate('/ManegementTable');
   }
@@ -112,6 +161,13 @@ const HomeScreen = () => {
               <li key={task.id} className="bg-white rounded-lg shadow p-4 mb-2 flex flex-col">
                 <div className="flex justify-between items-center">
                   <span className='font-semibold'>{task.title_number}</span>
+                  <div className='font-semibold'>
+                    {countdowns[task.id] && (
+                      <span className="text-sm text-red-500">
+                        {countdowns[task.id]}
+                      </span>
+                    )}
+                  </div>
                   <div className='flex space-x-2'>
                     <input 
                       type="checkbox"
