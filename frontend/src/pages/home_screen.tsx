@@ -17,6 +17,7 @@ const HomeScreen = () => {
   const [editingTaskId, setEditingTaskId] = useState<number | null>(null);
   const [newDeadline, setNewDeadline] = useState<string>("");
   const [countdowns, setCountdowns] = useState<{ [key: number]: string }>({});
+  const [searchKeyword, setSearchKeyword] = useState<string>("");
 
   useEffect(() => {
     fetchTasks();
@@ -29,7 +30,7 @@ const HomeScreen = () => {
       if(tasks){
         tasks.forEach(task => {
           if (task.deadline) {
-            updated[task.id] = getCountdown(task.deadline);
+            updated[task.id] = getCountdown(task.deadline, task.is_done);
           }
         });
       }
@@ -112,7 +113,8 @@ const HomeScreen = () => {
       });
   };
 
-  const getCountdown = (deadline?: string): string => {
+  const getCountdown = (deadline?: string, isDone?: boolean): string => {
+    if (isDone) return "～ Clear ～"
     if (!deadline) return "";
 
     const now = new Date();
@@ -160,53 +162,67 @@ const HomeScreen = () => {
           </div>
         </header>
         <hr className="my-4 border-gray-400" />
-
         <div className='px-30'>
           <ul className="mt-2 space-y-1">
-            {Array.isArray(tasks) && tasks.map((task) => (
-              <li key={task.id} className="bg-white rounded-lg shadow p-4 mb-2 flex flex-col">
-                <div className="flex justify-between items-center">
-                  <span className='font-semibold'>{task.title_number}</span>
-                  <div className='font-semibold'>
-                    {countdowns[task.id] && (
-                      <span className="text-sm text-red-500">
-                        {countdowns[task.id]}
-                      </span>
-                    )}
+            <div className="mb-3">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                項目名で検索
+              </label>
+              <input
+                type="text"
+                value={searchKeyword}
+                onChange={(e) => setSearchKeyword(e.target.value)}
+                placeholder="キーワードを入力"
+                className="border px-3 py-2 rounded w-full shadow-sm focus:outline-none focus:ring focus:border-blue-300"
+              />
+            </div>
+            {Array.isArray(tasks) && tasks
+              .filter(task => task.only_title.includes(searchKeyword))
+              .sort((a, b) => Number(a.is_done) - Number(b.is_done))
+              .map((task) => (
+                <li key={task.id} className="bg-white rounded-lg shadow p-4 mb-2 flex flex-col">
+                  <div className="flex justify-between items-center">
+                    <span className='font-semibold'>{task.title_number}</span>
+                    <div className='font-semibold'>
+                      {countdowns[task.id] && (
+                        <span className="text-sm text-red-500">
+                          {countdowns[task.id]}
+                        </span>
+                      )}
+                    </div>
+                    <div className='flex space-x-2'>
+                      <input 
+                        type="checkbox"
+                        checked={task.is_done}
+                        onChange={(e) => handleToggleDone(task.id, e.target.checked)} 
+                      />
+                      <button
+                        className='bg-yellow-400 text-white px-2 py-1 rounded text-sm'
+                        onClick={() => setEditingTaskId(task.id)}
+                      >
+                        期限設定
+                      </button>
+                      <button
+                        className='bg-red-500 text-white px-2 py-1 rounded text-sm'
+                        onClick={() => handleDeleteTask(task.id)}
+                      >
+                        削除
+                      </button>
+                    </div>
                   </div>
-                  <div className='flex space-x-2'>
-                    <input 
-                      type="checkbox"
-                      checked={task.is_done}
-                      onChange={(e) => handleToggleDone(task.id, e.target.checked)} 
-                    />
-                    <button
-                      className='bg-yellow-400 text-white px-2 py-1 rounded text-sm'
-                      onClick={() => setEditingTaskId(task.id)}
-                    >
-                      期限設定
-                    </button>
-                    <button
-                      className='bg-red-500 text-white px-2 py-1 rounded text-sm'
-                      onClick={() => handleDeleteTask(task.id)}
-                    >
-                      削除
-                    </button>
-                  </div>
-                </div>
-                <div className="text-sm text-gray-600">備考：{task.note}</div>
-                {task.deadline && (
-                  <div className="text-sm text-gray-500">
-                    期限：{new Date(task.deadline).toLocaleString(undefined, {
-                      year: 'numeric',
-                      month: '2-digit',
-                      day: '2-digit',
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })}
-                  </div>
-                )}
-              </li>
+                  <div className="text-sm text-gray-600">備考：{task.note}</div>
+                  {task.deadline && (
+                    <div className="text-sm text-gray-500">
+                      期限：{new Date(task.deadline).toLocaleString(undefined, {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    </div>
+                  )}
+                </li>
             ))}
             {editingTaskId !== null && (
               <div className="fixed top-0 left-0 w-full h-full bg-gray-100/40 flex items-center justify-center z-50">
