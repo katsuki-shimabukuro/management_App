@@ -26,11 +26,13 @@ const HomeScreen = () => {
     let interval: any;
     const updateCountdowns = () => {
       const updated: { [key: number]: string } = {};
-      tasks.forEach(task => {
-        if (task.deadline) {
-          updated[task.id] = getCountdown(task.deadline);
-        }
-      });
+      if(tasks){
+        tasks.forEach(task => {
+          if (task.deadline) {
+            updated[task.id] = getCountdown(task.deadline);
+          }
+        });
+      }
       setCountdowns(updated);
     };
 
@@ -56,7 +58,11 @@ const HomeScreen = () => {
     fetch("http://localhost:8080/api/tasks")
       .then((res) => res.json())
       .then((data) => {
-        setTasks(data);
+        if (Array.isArray(data)) {
+          setTasks(data);
+        } else {
+          setTasks([]);
+        }
       })
       .catch((err) => {
         console.error('API fetch error:', err);
