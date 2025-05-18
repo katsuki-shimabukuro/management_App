@@ -4,6 +4,9 @@ FROM golang:1.22
 # 作業ディレクトリを作成
 WORKDIR /app
 
+COPY go.mod go.sum ./
+RUN go mod download
+
 # ソースコードを全部コピー
 COPY . .
 
