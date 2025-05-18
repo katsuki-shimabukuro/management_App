@@ -177,7 +177,7 @@ const HomeScreen = () => {
               />
             </div>
             {Array.isArray(tasks) && tasks
-              .filter(task => task.only_title.includes(searchKeyword))
+              .filter(task => task.title_number.includes(searchKeyword))
               .sort((a, b) => Number(a.is_done) - Number(b.is_done))
               .map((task) => (
                 <li key={task.id} className="bg-white rounded-lg shadow p-4 mb-2 flex flex-col">
