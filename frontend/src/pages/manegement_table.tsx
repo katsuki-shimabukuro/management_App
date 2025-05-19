@@ -8,6 +8,7 @@ interface Task {
   lesson_number: number;
   note: string;
   is_done: boolean;
+  deadline?: string;
 }
 
 const ManegementTable = () => {
@@ -31,12 +32,15 @@ const ManegementTable = () => {
   };
 
   const groupedTasks: { [Key: string]:{ [lesson:number]: Task } } = {};
-  tasks.forEach((task) => {
-    if (!groupedTasks[task.only_title]) {
-      groupedTasks[task.only_title] = {};
-    }
-    groupedTasks[task.only_title][task.lesson_number] = task;
-  })
+  
+  if(tasks){
+    tasks.forEach((task) => {
+      if (!groupedTasks[task.only_title]) {
+        groupedTasks[task.only_title] = {};
+      }
+      groupedTasks[task.only_title][task.lesson_number] = task;
+    })
+  }
 
   const BackHome = () =>{
     navigate('/');
