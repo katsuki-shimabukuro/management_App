@@ -1,9 +1,38 @@
 # 課題管理アプリ
-* 課題をlistを利用し管理するアプリを作る。
-* フロント：react(Typescript), バック：Go
-* 画面イメージ図  
+## 背景  
+各課題の管理を下図のようにexcelで表を作成し、チェックボックスにより管理を行っていた。しかし、表のみでは、期限がわからないため、別で確認する必要があったり、作成途中などの現在の状況把握まではできない。また、半期ごとにexcelの作成が必要であり、手間のかかる作業となる。そこで、期限の確認と現在の状態管理、そして表の作成が簡単にできるようにするために、これらの機能を搭載したwebアプリを作成した。これにより、全体の把握が容易になるため、出し忘れの防止や、余裕を持った行動を行うことができることを期待している。   
+
+<img width="842" alt="image" src="https://github.com/user-attachments/assets/87a5ec00-b326-4067-b8dc-5a47a24756ec" />  
+
+## 目的  
+タスク管理を科目ごとに期限等を把握できるページと、それをもとに表により一括管理ができるページを作成するwebアプリを作成することを目的とする。  
+
+## サービス概要  
+* タスク管理を目的にする人向けに、課題管理を一括で行えるタスク一覧および表を作成。  
+* 期限、状態を一括で管理可能。  
+
+## 画像イメージ  
 <img width="300" alt="image" src="https://github.com/user-attachments/assets/eb96ecca-d00b-4ece-90e8-5f8dd154ca1f" />
 <img width="300" alt="image" src="https://github.com/user-attachments/assets/e7d73615-596e-46b6-a13d-ad0aafe93aff" />  
+
+
+## 動作イメージ   
+https://github.com/user-attachments/assets/1ef53257-6330-4bb6-985e-81f3bb481d27  
+
+## 機能  
+| HomePage | table |  
+| ----| ---- |
+| <img width="856" alt="image" src="https://github.com/user-attachments/assets/5ebbfdb2-331c-44fb-b997-7274b9c4ff40" /><br>
+  追加ページで追加したタスクが授業回数分表示される。ここでは、削除および各タスクの期限設定、チェックボックスの入力が行える。
+  
+ | table |
+
+
+
+
+
+
+
 
 ## 環境構築  
 ※ すでにwsl, npm, dockerはインストールされている。
