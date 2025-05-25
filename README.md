@@ -24,12 +24,6 @@
 https://github.com/user-attachments/assets/1ef53257-6330-4bb6-985e-81f3bb481d27  
 
 ## 機能  
-| HomePage | table |  
-| ----| ---- |
-| <img width="856" alt="image" src="https://github.com/user-attachments/assets/5ebbfdb2-331c-44fb-b997-7274b9c4ff40" /><br>
-  追加ページで追加したタスクが授業回数分表示される。ここでは、削除および各タスクの期限設定、チェックボックスの入力が行える。
-  
- | table |
 
 
 
@@ -46,14 +40,7 @@ https://github.com/user-attachments/assets/1ef53257-6330-4bb6-985e-81f3bb481d27
 `cd frontend`    
 `npm install`  
 
-2. Dockerfileおよびdocker-compose.ymlは各フォルダ参照  
-
-3. dockerのbuildおよび起動  
-`docker compose up --build`  
-or  
-起動のみ：`docker compose up`   
-
-4. Tailwind CSSのインストールと設定  
+2. Tailwind CSSのインストールと設定  
 `npm install tailwindcss @tailwindcss/vite`  
 `npm install tailwindcss @tailwindcss/cli`  
 `ls -l node_modules/.bin`  
@@ -62,8 +49,16 @@ cli,ls,npxのほうは、nodemodules/.binにtailwindcssを入れるために実�
 上記実行後、vite.config.tsに下記編集を加える  
 ![alt text](image.png)  
 次にindex.cssに下記を加える（実施済み）
-![alt text](image-1.png)  
-終わったら再度、3を行う。(dockerのbuildとup)  
+![alt text](image-1.png) 
+
+3. Dockerfileおよびdocker-compose.ymlは各フォルダ参照  
+
+4. dockerのbuildおよび起動  
+`docker compose up --build`  
+or  
+起動のみ：`docker compose up`   
+
+
 参照：  
 〈公式〉https://tailwindcss.com/docs/installation/using-vite  
 https://zenn.dev/mishima3141/articles/65668245241953  
