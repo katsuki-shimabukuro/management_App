@@ -1,4 +1,41 @@
 services:
+  # --- APIドキュメント & モックサーバー関連サービス ---
+  swagger-editor: # Swagger Editorサービス
+    image: swaggerapi/swagger-editor # Dockerのイメージ名
+    container_name: "swagger-editor" # コンテナ名
+    ports:
+      - "8001:8080" # ローカルポート8001からコンテナ内8080へマッピング
+    volumes:
+      # ホスト側の ./api/openapi.yaml をコンテナの /tmp/openapi.yaml にマウント
+      # このパスはSwagger Editorのデフォルトの保存パスではないため、手動で読み込む必要があります。
+      # または、エディタ内で直接記述・保存します。
+      - ./api/openapi.yaml:/tmp/openapi.yaml
+
+  swagger-ui: # Swagger UIサービス
+    image: swaggerapi/swagger-ui # Dockerのイメージ名
+    container_name: "swagger-ui" # コンテナ名
+    ports:
+      - "8002:8080" # ローカルポート8002からコンテナ内8080へマッピング
+    volumes:
+      # ローカルのOpenAPI仕様書をコンテナ内にマウント
+      - ./api/openapi.yaml:/openapi.yaml
+    environment:
+      # Swagger UIで読み込む仕様書のパスを指定
+      SWAGGER_JSON: /openapi.yaml
+
+  mock-server: # モックサーバー
+    image: stoplight/prism:4
+    container_name: "mock-server"
+    ports:
+      - "8003:4010"
+    command: mock -h 0.0.0.0 /openapi.yaml
+    volumes:
+      # ローカルのOpenAPI仕様書をコンテナ内にマウント
+      - ./api/openapi.yaml:/openapi.yaml
+    networks:
+      - app-network # モックサーバーもapp-networkに接続し、バックエンドやフロントエンドから利用可能にする
+
+  # --- アプリケーション関連サービス ---
   backend:
     build:
       context: ./backend

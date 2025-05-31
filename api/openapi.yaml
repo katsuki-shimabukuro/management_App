@@ -1,0 +1,21 @@
+openapi: 3.0.0  # OpenAPIのバージョン指定
+info:
+  title: Swagger Sample # APIのタイトル
+  version: 1.0.0  # バージョン情報
+servers:
+  - url: http://localhost:8003
+paths:
+  /helloSwagger:  # エンドポイント
+    get:  # HTTPメソッド
+      summary:  Sample API  # APIの概要
+      responses:
+        '200':  # ステータスコード200の場合のレスポンス定義
+          description:  This is swagger sample  # レスポンス内容の説明
+          content:
+            application/json:
+              schema:
+                type: object 
+                properties:
+                  message:
+                    type: string
+                    example:  "Hello Swagger!"
