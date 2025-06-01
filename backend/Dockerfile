@@ -9,6 +9,7 @@ RUN go mod download
 
 # ソースコードを全部コピー
 COPY . .
+COPY docs/ ./docs/
 
 RUN mkdir -p /app/data
 RUN go build -o server .

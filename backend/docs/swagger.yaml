@@ -1,0 +1,127 @@
+basePath: /api
+definitions:
+  main.Task:
+    properties:
+      deadline:
+        type: string
+      id:
+        type: integer
+      is_done:
+        type: boolean
+      lesson_number:
+        type: integer
+      note:
+        type: string
+      only_title:
+        type: string
+      title_number:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: This is a simple task management API.
+  title: Task API
+  version: "1.0"
+paths:
+  /tasks:
+    get:
+      description: Get a list of all tasks
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/main.Task'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Get all tasks
+      tags:
+      - tasks
+    post:
+      consumes:
+      - application/json
+      description: Add a new task with title, lesson number, and note
+      parameters:
+      - description: Task to create
+        in: body
+        name: task
+        required: true
+        schema:
+          $ref: '#/definitions/main.Task'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Create a new task
+      tags:
+      - tasks
+  /tasks/{id}:
+    delete:
+      description: Delete a task by ID
+      parameters:
+      - description: Task ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: No Content
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Delete a task
+      tags:
+      - tasks
+    patch:
+      consumes:
+      - application/json
+      description: Update task fields such as is_done or deadline
+      parameters:
+      - description: Task ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Fields to update
+        in: body
+        name: task
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Update a task
+      tags:
+      - tasks
+swagger: "2.0"
