@@ -9,8 +9,19 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	_ "github.com/mattn/go-sqlite3"
+
+	_ "github.com/katsuki-shimabukuro/management_App/backend/docs" // ← ここは go mod init したモジュール名に置き換えてください
+
+	echoSwagger "github.com/swaggo/echo-swagger"
 )
 
+// @title Task API
+// @version 1.0
+// @description This is a simple task management API.
+// @host localhost:8080
+// @BasePath /api
+
+// Task represents a task item in the system
 type Task struct {
 	ID           int     `json:"id"`
 	TitleNumber  string  `json:"title_number"`
@@ -31,7 +42,7 @@ func main() {
 	}
 	defer db.Close()
 
-	// テーブル作成
+	// Create table if not exists
 	sqlStmt := `
 	CREATE TABLE IF NOT EXISTS tasks (
 		id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
@@ -48,22 +59,33 @@ func main() {
 
 	e := echo.New()
 
-	// ミドルウェア
+	// Middleware
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 	e.Use(middleware.CORS())
 
-	// エンドポイント定義
-	e.GET("/api/tasks", getTasks)
-	e.POST("/api/tasks", createTask)
-	e.DELETE("/api/tasks/:id", deleteTask)
-	e.PATCH("/api/tasks/:id", updateTask)
+	// Swagger
+	e.GET("/swagger/*", echoSwagger.WrapHandler)
 
-	// サーバ起動
+	// Routes
+	api := e.Group("/api")
+	api.GET("/tasks", getTasks)
+	api.POST("/tasks", createTask)
+	api.DELETE("/tasks/:id", deleteTask)
+	api.PATCH("/tasks/:id", updateTask)
+
+	// Start server
 	e.Logger.Fatal(e.Start(":8080"))
 }
 
-// GET /api/tasks
+// getTasks godoc
+// @Summary Get all tasks
+// @Description Get a list of all tasks
+// @Tags tasks
+// @Produce json
+// @Success 200 {array} Task
+// @Failure 500 {string} string
+// @Router /tasks [get]
 func getTasks(c echo.Context) error {
 	rows, err := db.Query("SELECT id, title_number, only_title, lesson_number, note, is_done, deadline FROM tasks ORDER BY deadline IS NULL, deadline ASC, lesson_number ASC")
 	if err != nil {
@@ -87,7 +109,17 @@ func getTasks(c echo.Context) error {
 	return c.JSON(http.StatusOK, tasks)
 }
 
-// POST /api/tasks
+// createTask godoc
+// @Summary Create a new task
+// @Description Add a new task with title, lesson number, and note
+// @Tags tasks
+// @Accept json
+// @Produce json
+// @Param task body Task true "Task to create"
+// @Success 201 {object} map[string]string
+// @Failure 400 {string} string
+// @Failure 500 {string} string
+// @Router /tasks [post]
 func createTask(c echo.Context) error {
 	var t Task
 	if err := c.Bind(&t); err != nil {
@@ -105,7 +137,14 @@ func createTask(c echo.Context) error {
 	return c.JSON(http.StatusCreated, map[string]string{"message": "Task added"})
 }
 
-// DELETE /api/tasks/:id
+// deleteTask godoc
+// @Summary Delete a task
+// @Description Delete a task by ID
+// @Tags tasks
+// @Param id path int true "Task ID"
+// @Success 204
+// @Failure 500 {string} string
+// @Router /tasks/{id} [delete]
 func deleteTask(c echo.Context) error {
 	id := c.Param("id")
 	_, err := db.Exec("DELETE FROM tasks WHERE id = ?", id)
@@ -115,7 +154,17 @@ func deleteTask(c echo.Context) error {
 	return c.NoContent(http.StatusNoContent)
 }
 
-// PATCH /api/tasks/:id
+// updateTask godoc
+// @Summary Update a task
+// @Description Update task fields such as is_done or deadline
+// @Tags tasks
+// @Accept json
+// @Param id path int true "Task ID"
+// @Param task body map[string]interface{} true "Fields to update"
+// @Success 204
+// @Failure 400 {string} string
+// @Failure 500 {string} string
+// @Router /tasks/{id} [patch]
 func updateTask(c echo.Context) error {
 	id := c.Param("id")
 	var body map[string]interface{}
