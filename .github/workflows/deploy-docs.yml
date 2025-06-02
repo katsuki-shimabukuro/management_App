@@ -1,0 +1,39 @@
+name: Deploy Swagger Docs to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js (if you use swagger-cli or redoc-cli)
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      # ここで Swagger ドキュメントを生成（必要に応じて）
+      # - name: Install swagger-cli
+      #   run: npm install -g swagger-cli
+      #
+      # - name: Generate Swagger docs
+      #   run: swagger-cli bundle backend/openapi.yaml -o backend/docs/index.html
+
+      - name: Prepare docs folder for GitHub Pages
+        run: |
+          mkdir -p docs
+          cp -r backend/docs/* docs/
+
+      - name: Commit and push to GitHub Pages branch
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add docs/
+          git commit -m "Update Swagger docs" || echo "No changes to commit"
+          git push
